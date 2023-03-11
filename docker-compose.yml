@@ -1,0 +1,112 @@
+version: '3'
+
+volumes:
+  postgres_data:
+    name: movies
+  redis_data:
+    name: redis
+  elasticsearch_data:
+    name: elasticsearch
+
+networks:
+  movies_network:
+
+services:
+  db:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./db/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
+    networks:
+      - movies_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d ${DB_NAME} -U app" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports: # TODO remove
+      - 5432:5432
+
+  redis:
+    image: redis:7.0.8-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - movies_network
+    healthcheck:
+      test: [ "CMD", "redis-cli","ping" ]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    restart: always
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - movies_network
+    ports:
+      - 9200:9200 # TODO remove
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etl:
+    build:
+      context: .
+      dockerfile: postgres_to_es/Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - movies_network
+
+  api:
+    build:
+      context: ./fastapi-solution
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - movies_network
+    ports:
+      - 8000:8000
+
+# TODO изменит конфиги
+#  nginx:
+#    image: nginx:1.23.1-alpine
+#    restart: always
+#    volumes:
+#      - static_data:/var/html/static/
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+#    depends_on:
+#      - api
+#    networks:
+#      - movies_network
+#    ports:
+#      - 80:80
