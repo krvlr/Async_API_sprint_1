@@ -1,41 +1,41 @@
 from http import HTTPStatus
 
+from pydantic import BaseModel
+
 from decorators import backoff
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from es_schema import MOVIES_INDEX
 from loguru import logger
 from models import ESFilmworkData
 from settings import ELASTIC_SEARCH_URL
 
 
 class ElasticsearchLoader:
-    def __init__(self):
-        self._create_index()
-
     @backoff()
     def create_connection(self):
         self.client = Elasticsearch(ELASTIC_SEARCH_URL)
         return self.client
 
     @backoff()
-    def _create_index(self) -> None:
-        with self.create_connection():
-            if not self.client.indices.exists(index="movies"):
-                self.client.indices.create(
-                    index="movies",
-                    ignore=HTTPStatus.BAD_REQUEST,
-                    body=MOVIES_INDEX,
-                )
-                logger.debug("Индекс для movies создан")
+    def _create_index(self, index_name: str, index_params: dict) -> None:
+        self.client.indices.create(
+            index=index_name,
+            ignore=HTTPStatus.BAD_REQUEST,
+            body=index_params,
+        )
+        logger.debug("Индекс для movies создан")
 
     @backoff()
-    def load_movies(self, data: list[ESFilmworkData]) -> None:
+    def load_data(self, index_name: str, index_params: dict, data: list[BaseModel]) -> None:
         if not self.client:
             raise Exception(
                 "Не клиент elasticsearch. Воспользуйтесь create_connection."
             )
+
+        if not self.client.indices.exists(index=index_name):
+            self._create_index(index_name, index_params)
+
         documents = [
-            {"_index": "movies", "_id": row.id, "_source": row.dict()} for row in data
+            {"_index": index_name, "_id": row.id, "_source": row.dict()} for row in data
         ]
         bulk(self.client, documents)
