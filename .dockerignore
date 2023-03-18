@@ -1,0 +1,12 @@
+**/__pycache__
+**/.git
+**/.gitignore
+**/.dockerignore
+**/.vscode
+**/.idea
+**/.env
+**/.ssh
+**/Dockerfile
+**/.md
+**/venv
+**/env
