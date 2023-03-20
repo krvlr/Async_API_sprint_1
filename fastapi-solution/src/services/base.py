@@ -24,6 +24,7 @@ class Service:
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
+        self.ALLOWED_SORT_FIELDS = dict()
 
     async def _get_obj_from_elastic(self, obj_id: str, index: str, model: BaseModel) -> BaseModel | None:
         try:
@@ -69,17 +70,21 @@ class Service:
             body=query,
             from_=(page_number - 1) * page_size,
             size=page_size,
-            sort=self._make_sort_string(sort, model) if sort else None
+            sort=self._make_sort_string(sort, model)
         )
         return docs
 
-    def _make_sort_string(self, sort_fields: list[str], model: BaseModel) -> str:
-        sort_list = list()
+    def _make_sort_string(self, sort_fields: list[str] | None, model: BaseModel) -> str:
+        sort_list = ['id:desc']
+
+        if sort_fields is None:
+            return ','.join(sort_list)
+
         for field in sort_fields:
             sort_order = SortingOrder.DESC.value if field.startswith('-') else SortingOrder.ASC.value
             sort_by = field.strip('-')
-            if sort_by in model.__fields__:
-                sort_list.append(f'{sort_by}:{sort_order}')
+            if sort_by in model.__fields__ and sort_by in self.ALLOWED_SORT_FIELDS:
+                sort_list.append(f'{self.ALLOWED_SORT_FIELDS[sort_by]}:{sort_order}')
         return ','.join(sort_list)
 
     def _add_query_filters(self, query: dict, filters: dict, model: BaseModel) -> dict:

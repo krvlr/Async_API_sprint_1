@@ -66,4 +66,9 @@ def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
-    return FilmService(redis, elastic)
+    film_service = FilmService(redis, elastic)
+    film_service.ALLOWED_SORT_FIELDS = {
+        'title': 'title.raw',
+        'imdb_rating': 'imdb_rating'
+    }
+    return film_service
