@@ -1,4 +1,7 @@
 import orjson
+from dataclasses import dataclass
+
+from fastapi import Query
 from pydantic import BaseModel
 
 
@@ -6,12 +9,44 @@ def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class Film(BaseModel):
+@dataclass
+class FilmFilters:
+    genres_id: list[str] | None = Query(default=None)
+    genres_name: list[str] | None = Query(default=None)
+    actors_id: list[str] | None = Query(default=None)
+    actors_name: list[str] | None = Query(default=None)
+    writers_id: list[str] | None = Query(default=None)
+    writers_name: list[str] | None = Query(default=None)
+    directors_id: list[str] | None = Query(default=None)
+    directors_name: list[str] | None = Query(default=None)
+
+
+class FilmBrief(BaseModel):
     id: str
     title: str
-    description: str
+    imdb_rating: float
+
+
+class FilmPerson(BaseModel):
+    id: str
+    name: str
+
+
+class FilmGenre(BaseModel):
+    id: str
+    name: str
+
+
+class FilmDetail(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    imdb_rating: float
+    actors: list[FilmPerson]
+    writers: list[FilmPerson]
+    directors: list[FilmPerson]
+    genres: list[FilmGenre]
 
     class Config:
-        # Заменяем стандартную работу с json на более быструю
         json_loads = orjson.loads
         json_dumps = orjson_dumps
