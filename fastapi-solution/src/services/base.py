@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from enum import Enum
-from typing import Any, Type
+from typing import Any, Type, Union
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ from pydantic.main import ModelMetaclass
 from redis.asyncio.client import Redis
 
 from models.film import FilmDetail
+from models.genre import GenreDetail
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class Service:
         self.ALLOWED_SORT_FIELDS = dict()
 
     async def _get_obj_from_elastic(
-        self, obj_id: str, index: str, model_cls: Type[FilmDetail]
+        self, obj_id: str, index: str, model_cls: Type[Union[FilmDetail, GenreDetail]]
     ) -> BaseModel | None:
         try:
             doc = await self.elastic.get(index, obj_id)
@@ -68,19 +69,18 @@ class Service:
         return docs
 
     def _make_sort_string(self, sort_fields: list[str] | None, model: BaseModel) -> str:
-        sort_list = ["id:desc"]
-
         if sort_fields is None:
-            return ",".join(sort_list)
+            return "id:desc"
 
+        prepared_sort_fields = []
         for field in sort_fields:
             sort_order = (
                 SortingOrder.DESC.value if field.startswith("-") else SortingOrder.ASC.value
             )
             sort_by = field.strip("-")
             if sort_by in model.__fields__ and sort_by in self.ALLOWED_SORT_FIELDS:
-                sort_list.append(f"{self.ALLOWED_SORT_FIELDS[sort_by]}:{sort_order}")
-        return ",".join(sort_list)
+                prepared_sort_fields.append(f"{self.ALLOWED_SORT_FIELDS[sort_by]}:{sort_order}")
+        return ",".join(prepared_sort_fields)
 
     def _add_query_filters(self, query: dict, filters: dict, model: Type[BaseModel]) -> dict:
         query_filters = list()
