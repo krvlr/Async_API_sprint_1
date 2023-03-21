@@ -1,12 +1,11 @@
 from http import HTTPStatus
 
-from pydantic import BaseModel
-
-from decorators import backoff
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from loguru import logger
-from models import ESFilmworkData
+from pydantic import BaseModel
+
+from decorators import backoff
 from settings import ELASTIC_SEARCH_URL
 
 
@@ -29,13 +28,11 @@ class ElasticsearchLoader:
     def load_data(self, index_name: str, index_params: dict, data: list[BaseModel]) -> None:
         if not self.client:
             raise Exception(
-                "Не клиент elasticsearch. Воспользуйтесь create_connection."
+                "Клиент elasticsearch не инициализирован. Воспользуйтесь create_connection."
             )
 
         if not self.client.indices.exists(index=index_name):
             self._create_index(index_name, index_params)
 
-        documents = [
-            {"_index": index_name, "_id": row.id, "_source": row.dict()} for row in data
-        ]
+        documents = [{"_index": index_name, "_id": row.id, "_source": row.dict()} for row in data]
         bulk(self.client, documents)

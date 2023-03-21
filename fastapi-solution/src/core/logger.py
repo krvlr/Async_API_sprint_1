@@ -1,8 +1,3 @@
-import logging
-import os
-
-from dotenv import load_dotenv
-
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_DEFAULT_HANDLERS = [
     "console",
@@ -60,9 +55,3 @@ LOGGING = {
         "handlers": LOG_DEFAULT_HANDLERS,
     },
 }
-
-load_dotenv()
-
-LOGGING_LEVEL = (
-    logging.DEBUG if os.environ.get("DEBUG", False) == "True" else logging.INFO
-)

@@ -1,6 +1,6 @@
-import orjson
 from dataclasses import dataclass
 
+import orjson
 from fastapi import Query
 from pydantic import BaseModel
 
@@ -37,11 +37,8 @@ class FilmGenre(BaseModel):
     name: str
 
 
-class FilmDetail(BaseModel):
-    id: str
-    title: str
+class FilmDetail(FilmBrief):
     description: str | None
-    imdb_rating: float
     actors: list[FilmPerson]
     writers: list[FilmPerson]
     directors: list[FilmPerson]
