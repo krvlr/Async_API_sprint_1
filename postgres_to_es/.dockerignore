@@ -1,0 +1,15 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/coverage
+**/.env
+**/.aws
+**/.ssh
+**/.dockerignore
+**/Dockerfile
+**/*.md
+**/*.yml
+**/.DS_Store
+**/venv
+**/env
