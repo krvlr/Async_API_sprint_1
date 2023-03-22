@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
 import orjson
-from pydantic import BaseModel
 from fastapi import Query
+from pydantic import BaseModel
 
-
-def orjson_dumps(v, *, default):
-    return orjson.dumps(v, default=default).decode()
+from models.shared import orjson_dumps
 
 
 @dataclass
@@ -19,9 +17,7 @@ class GenreBrief(BaseModel):
     name: str
 
 
-class GenreDetail(BaseModel):
-    id: str
-    name: str
+class GenreDetail(GenreBrief):
     description: str | None
 
     class Config:

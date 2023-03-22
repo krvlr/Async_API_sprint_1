@@ -29,8 +29,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    ports: # TODO remove
-      - 5432:5432
 
   redis:
     image: redis:7.0.8-alpine
@@ -53,8 +51,6 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
       - movies_network
-    ports:
-      - 9200:9200 # TODO remove
     healthcheck:
       test: [ "CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1" ]
       interval: 10s

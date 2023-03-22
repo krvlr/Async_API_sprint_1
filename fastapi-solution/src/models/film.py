@@ -4,9 +4,7 @@ import orjson
 from fastapi import Query
 from pydantic import BaseModel
 
-
-def orjson_dumps(v, *, default):
-    return orjson.dumps(v, default=default).decode()
+from models.shared import orjson_dumps
 
 
 @dataclass
