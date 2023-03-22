@@ -16,27 +16,27 @@ from models import ESFilmworkData, ESPersonData, ESGenreData
 
 class ETLHandler:
     PARAMS = {
-        'filmwork': {
-            'sql_query': FILMWORKS_QUERY,
-            'elastic_index_name': 'movies',
-            'elastic_index_params': MOVIES_INDEX,
-            'transform_model': ESFilmworkData,
-            'param_count': 3
+        "filmwork": {
+            "sql_query": FILMWORKS_QUERY,
+            "elastic_index_name": "movies",
+            "elastic_index_params": MOVIES_INDEX,
+            "transform_model": ESFilmworkData,
+            "param_count": 3,
         },
-        'person': {
-            'sql_query': PERSONS_QUERY,
-            'elastic_index_name': 'persons',
-            'elastic_index_params': PERSONS_INDEX,
-            'transform_model': ESPersonData,
-            'param_count': 2
+        "person": {
+            "sql_query": PERSONS_QUERY,
+            "elastic_index_name": "persons",
+            "elastic_index_params": PERSONS_INDEX,
+            "transform_model": ESPersonData,
+            "param_count": 2,
         },
-        'genre': {
-            'sql_query': GENRES_QUERY,
-            'elastic_index_name': 'genres',
-            'elastic_index_params': GENRE_INDEX,
-            'transform_model': ESGenreData,
-            'param_count': 1
-        }
+        "genre": {
+            "sql_query": GENRES_QUERY,
+            "elastic_index_name": "genres",
+            "elastic_index_params": GENRE_INDEX,
+            "transform_model": ESGenreData,
+            "param_count": 1,
+        },
     }
 
     @staticmethod
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     transformer = DataTransform()
     loader = ElasticsearchLoader()
 
-    etl_for = ('filmwork', 'person', 'genre')
+    etl_for = ("filmwork", "person", "genre")
 
     while True:
         try:
@@ -70,15 +70,19 @@ if __name__ == "__main__":
                 for obj_type in etl_for:
                     etl = ETLHandler.get_etl(obj_type)
                     count = 0
-                    for data in extractor.extract_data(etl.sql_query, etl.param_count, last_modified_datetime):
-                        transformed_data = transformer.validate_and_transform(etl.transform_model, data)
-                        loader.load_data(etl.elastic_index_name, etl.elastic_index_params, transformed_data)
+                    for data in extractor.extract_data(
+                        etl.sql_query, etl.param_count, last_modified_datetime
+                    ):
+                        transformed_data = transformer.validate_and_transform(
+                            etl.transform_model, data
+                        )
+                        loader.load_data(
+                            etl.elastic_index_name, etl.elastic_index_params, transformed_data
+                        )
                         count += len(transformed_data)
                         logger.info(f"Загружено всего {count} записей для {obj_type}")
 
-                state.set_state(
-                    "last_modified_datetime", datetime.now().isoformat()
-                )
+                state.set_state("last_modified_datetime", datetime.now().isoformat())
 
         except Exception as e:
             logger.error(e)
