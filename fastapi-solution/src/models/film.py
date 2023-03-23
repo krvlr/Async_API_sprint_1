@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-import orjson
 from fastapi import Query
 from pydantic import BaseModel
 
-from models.shared import orjson_dumps
+from models.shared import BaseOrjsonModel
 
 
 @dataclass
@@ -19,12 +18,6 @@ class FilmFilters:
     directors_name: list[str] | None = Query(default=None)
 
 
-class FilmBrief(BaseModel):
-    id: str
-    title: str
-    imdb_rating: float
-
-
 class FilmPerson(BaseModel):
     id: str
     name: str
@@ -35,13 +28,15 @@ class FilmGenre(BaseModel):
     name: str
 
 
+class FilmBrief(BaseOrjsonModel):
+    id: str
+    title: str
+    imdb_rating: float
+
+
 class FilmDetail(FilmBrief):
     description: str | None
     actors: list[FilmPerson]
     writers: list[FilmPerson]
     directors: list[FilmPerson]
     genres: list[FilmGenre]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
