@@ -1,12 +1,7 @@
 import logging
 import os
-from logging import config as logging_config
 
 from pydantic import BaseSettings, Field
-
-from core.logger import LOGGING
-
-logging_config.dictConfig(LOGGING)
 
 
 class Settings(BaseSettings):
@@ -25,4 +20,4 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-log_level = logging.DEBUG if settings else logging.INFO
+log_level = logging.DEBUG if settings.debug_log_level else logging.INFO

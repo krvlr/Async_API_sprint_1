@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 from api.v1 import films, genres, persons
 from core import config
 from core.config import settings
-from core.logger import LOGGING
+from core.logger import get_logging_config_dict
 from db import elastic, redis
 
 app = FastAPI(
@@ -40,6 +40,6 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        log_config=LOGGING,
+        log_config=get_logging_config_dict(config.log_level),
         log_level=config.log_level,
     )

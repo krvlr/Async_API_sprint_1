@@ -80,7 +80,7 @@ if __name__ == "__main__":
                             etl.elastic_index_name, etl.elastic_index_params, transformed_data
                         )
                         count += len(transformed_data)
-                        logger.info(f"Загружено всего {count} записей для {obj_type}")
+                        logger.info("Загружено всего {} записей для {}", count, obj_type)
 
                 state.set_state("last_modified_datetime", datetime.now().isoformat())
 

@@ -15,7 +15,9 @@ from services.persons import PersonService, get_person_service
 router = APIRouter()
 
 
-@router.get("/search", response_model=list[PersonBrief])
+@router.get(
+    "/search", response_model=list[PersonBrief], description="Search persons based on title query, filters and sorting"
+)
 async def person_search(
     query: str | None = None,
     sort: list[str] | None = Query(default=None),
@@ -29,7 +31,7 @@ async def person_search(
     return [PersonBrief(**person.dict()) for person in persons]
 
 
-@router.get("/", response_model=list[PersonBrief])
+@router.get("/", response_model=list[PersonBrief], description="Get list of all persons with filters and sorting")
 async def person_list(
     sort: list[str] | None = Query(default=None),
     filters: PersonFilters = Depends(PersonFilters),
@@ -42,7 +44,7 @@ async def person_list(
     return [PersonBrief(**person.dict()) for person in persons]
 
 
-@router.get("/{person_id}", response_model=PersonDetail)
+@router.get("/{person_id}", response_model=PersonDetail, description="Get single person details")
 async def person_details(
     person_id: str, person_service: PersonService = Depends(get_person_service)
 ) -> PersonDetail:
