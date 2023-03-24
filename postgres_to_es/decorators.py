@@ -42,10 +42,10 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
                     sleep(t)
                     return func(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f"Ошибка {e}")
+                    logger.error("Ошибка {}", e)
                     logger.exception(e)
                     logger.warning(
-                        f"Ожидаем {t} секунд переда перезапуском функции {func.__name__}"
+                        "Ожидаем {} секунд переда перезапуском функции {}", t, func.__name__
                     )
 
         return retry

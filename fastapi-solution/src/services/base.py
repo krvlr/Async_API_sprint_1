@@ -57,7 +57,7 @@ class Service:
         filters = {k: v for k, v in filters.items() if v is not None}
 
         query = self._add_query_filters(query, filters, model)
-        logger.info(f"Elastic query: {query}")
+        logger.info("Elastic query: {}", query)
 
         docs = await self.elastic.search(
             index=index,
@@ -122,7 +122,7 @@ class Service:
                         root_model = field.type_
 
             if not path_field:
-                logger.warning(f"Invalid filter path: {filter_path}")
+                logger.warning("Invalid filter path: {}", filter_path)
                 return
 
             path.append(path_field)

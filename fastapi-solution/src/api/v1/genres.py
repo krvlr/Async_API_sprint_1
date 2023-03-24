@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 router = APIRouter()
 
 
-@router.get("/", response_model=list[GenreBrief])
+@router.get("/", response_model=list[GenreBrief], description="Get list of all genres with filters and sorting")
 async def genre_list(
     sort: list[str] | None = Query(default=None),
     filters: GenreFilters = Depends(GenreFilters),
@@ -27,7 +27,7 @@ async def genre_list(
     return [GenreBrief(**genre.dict()) for genre in genres]
 
 
-@router.get("/{genre_id}", response_model=GenreDetail)
+@router.get("/{genre_id}", response_model=GenreDetail, description="Get single genre details")
 async def genre_details(
     genre_id: str, genre_service: GenreService = Depends(get_genre_service)
 ) -> GenreDetail:
